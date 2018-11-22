@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <cassert>
+#include <memory>
 #include <boost/foreach.hpp>
 
 #include <gazebo/sensors/SensorManager.hh>
@@ -181,8 +182,8 @@ bool PalHardwareGazebo::parseForceTorqueSensors(ros::NodeHandle& nh,
     ft->gazebo_joint = model->GetJoint(ft->sensorJointName);
 
     // Get sensor parent transform
-    boost::shared_ptr<const urdf::Link> urdf_sensor_link;
-    boost::shared_ptr<const urdf::Joint> urdf_sensor_joint;
+    std::shared_ptr<const urdf::Link> urdf_sensor_link;
+    std::shared_ptr<const urdf::Joint> urdf_sensor_joint;
     urdf_sensor_link = urdf_model->getLink(ft->sensorFrame);
     urdf_sensor_joint = urdf_model->getJoint(sensor_joint_name);
 
