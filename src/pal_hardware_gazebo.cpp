@@ -30,6 +30,7 @@
 #include <boost/foreach.hpp>
 
 #include <gazebo/sensors/SensorManager.hh>
+#include <ignition/math.hh>
 
 #include <urdf_parser/urdf_parser.h>
 #include <pluginlib/class_list_macros.h>
@@ -361,12 +362,21 @@ void PalHardwareGazebo::readSim(ros::Time time, ros::Duration period)
     ForceTorqueSensorDefinitionPtr& ft = forceTorqueSensorDefinitions_[i];
     gazebo::physics::JointWrench ft_wrench = ft->gazebo_joint->GetForceTorque(0u);
 
+#if GAZEBO_MAJOR_VERSION >= 8 || (GAZEBO_MAJOR_VERSION == 7 && GAZEBO_MINOR_VERSION >= 11)
+    ft->force[0] = ft_wrench.body2Force.X();
+    ft->force[1] = ft_wrench.body2Force.Y();
+    ft->force[2] = ft_wrench.body2Force.Z();
+    ft->torque[0] = ft_wrench.body2Torque.X();
+    ft->torque[1] = ft_wrench.body2Torque.Y();
+    ft->torque[2] = ft_wrench.body2Torque.Z();
+#else
     ft->force[0] = ft_wrench.body2Force.x;
     ft->force[1] = ft_wrench.body2Force.y;
     ft->force[2] = ft_wrench.body2Force.z;
     ft->torque[0] = ft_wrench.body2Torque.x;
     ft->torque[1] = ft_wrench.body2Torque.y;
     ft->torque[2] = ft_wrench.body2Torque.z;
+#endif
 
     // Transform to sensor frame
     Eigen::MatrixXd transform(6, 6);
@@ -395,22 +405,40 @@ void PalHardwareGazebo::readSim(ros::Time time, ros::Duration period)
   for (size_t i = 0; i < imuSensorDefinitions_.size(); ++i)
   {
     ImuSensorDefinitionPtr& imu = imuSensorDefinitions_[i];
-
-    gazebo::math::Quaternion imu_quat = imu->gazebo_imu_sensor->Orientation();
+    auto imu_quat = imu->gazebo_imu_sensor->Orientation();
+#if GAZEBO_MAJOR_VERSION >= 8 || (GAZEBO_MAJOR_VERSION == 7 && GAZEBO_MINOR_VERSION >= 11)
+    imu->orientation[0] = imu_quat.X();
+    imu->orientation[1] = imu_quat.Y();
+    imu->orientation[2] = imu_quat.Z();
+    imu->orientation[3] = imu_quat.W();
+#else
     imu->orientation[0] = imu_quat.x;
     imu->orientation[1] = imu_quat.y;
     imu->orientation[2] = imu_quat.z;
     imu->orientation[3] = imu_quat.w;
+#endif
 
-    gazebo::math::Vector3 imu_ang_vel = imu->gazebo_imu_sensor->AngularVelocity();
+    auto imu_ang_vel = imu->gazebo_imu_sensor->AngularVelocity();
+#if GAZEBO_MAJOR_VERSION >= 8 || (GAZEBO_MAJOR_VERSION == 7 && GAZEBO_MINOR_VERSION >= 11)
+    imu->base_ang_vel[0] = imu_ang_vel.X();
+    imu->base_ang_vel[1] = imu_ang_vel.Y();
+    imu->base_ang_vel[2] = imu_ang_vel.Z();
+#else
     imu->base_ang_vel[0] = imu_ang_vel.x;
     imu->base_ang_vel[1] = imu_ang_vel.y;
     imu->base_ang_vel[2] = imu_ang_vel.z;
+#endif
 
-    gazebo::math::Vector3 imu_lin_acc = imu->gazebo_imu_sensor->LinearAcceleration();
+    auto imu_lin_acc = imu->gazebo_imu_sensor->LinearAcceleration();
+#if GAZEBO_MAJOR_VERSION >= 8 || (GAZEBO_MAJOR_VERSION == 7 && GAZEBO_MINOR_VERSION >= 11)
+    imu->linear_acceleration[0] = imu_lin_acc.X();
+    imu->linear_acceleration[1] = imu_lin_acc.Y();
+    imu->linear_acceleration[2] = imu_lin_acc.Z();
+#else
     imu->linear_acceleration[0] = imu_lin_acc.x;
     imu->linear_acceleration[1] = imu_lin_acc.y;
     imu->linear_acceleration[2] = imu_lin_acc.z;
+#endif
   }
 }
 
